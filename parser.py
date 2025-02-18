@@ -61,7 +61,6 @@ async def handle_style_choice(update: Update, context: CallbackContext) -> int:
     
     if style == "💰 Old Money":
         context.user_data['text_prompt'] = [
-            "a woman standing next to a horse in a lush, green field. She is wearing a tailored white blouse with a high collar, tucked into black riding trousers. Her boots are polished, and she holds a riding crop in one hand. The background features rolling hills and a few trees, with the sun casting a warm, golden light. The overall atmosphere should be refined, sophisticated, and serene, evoking a sense of timeless elegance.",
             "a woman standing in an opulent indoor setting with soft, ambient lighting. She is dressed in a white blazer with a deep V-neck, paired with tailored black trousers and classic black heels. Her hair is styled in soft waves, and she wears minimal, elegant jewelry. The background includes luxurious furnishings, such as a velvet armchair, a marble fireplace, and ornate gold-framed mirrors. The overall mood should be one of understated luxury and classic sophistication",
             "a woman posing in a sophisticated indoor environment with warm, ambient lighting. She is wearing a simple yet elegant white dress with thin straps, cinched at the waist with a delicate belt. Her hair is styled in a chic updo, and she wears pearl earrings and a matching bracelet. The background features elegant decor, such as a grand piano, a crystal chandelier, and plush drapery. The atmosphere should convey timeless elegance and refinement",
             "a woman standing on a boat with a scenic waterfront view in the background. She is dressed in a classic white shirt with rolled-up sleeves, tucked into high-waisted navy trousers. Her hair is styled in a neat ponytail, and she wears aviator sunglasses. The boat's deck is made of polished wood, and the water is calm, reflecting the clear blue sky. The scene should convey a sense of timeless elegance and sophistication, with a hint of adventure.",
@@ -69,15 +68,17 @@ async def handle_style_choice(update: Update, context: CallbackContext) -> int:
     elif style == "🌸 Весна":
         context.user_data['text_prompt'] = ["A beautiful young woman with long, flowing wavy hair, wearing a floral wreath made of spring flowers like cherry blossoms and tulips. She is in a blooming spring garden with pink cherry trees and fresh green grass. She wears a light, airy dress in pastel colors. The lighting is soft and natural, creating a fresh, romantic spring atmosphere."]
     elif style == "🧘‍♀️ Медитация":
-        context.user_data['text_prompt'] = ["A serene young woman in a peaceful meditation pose, sitting cross-legged on a natural stone platform. She's wearing comfortable, flowing yoga attire in earth tones. The setting is a tranquil zen garden with gentle morning mist. Soft, diffused lighting creates a calm, spiritual atmosphere. Her expression is peaceful and centered."]
+        context.user_data['text_prompt'] = ["image of a serene woman meditating outdoors at sunset. She is sitting cross-legged on a woven mat, wearing a flowing white outfit that drapes gracefully around her. Her hands rest gently on her lap, holding a polished brass bowl. The setting features a tranquil landscape with a calm body of water reflecting the warm hues of the sunset. Rocky terrain and scattered wildflowers add texture to the foreground, while distant mountains and soft, golden clouds complete the background. The soft, diffused lighting of the setting sun bathes the scene in a peaceful, warm glow, enhancing the overall sense of calm and serenity."]
     elif style == "📚 Фото с книгами":
         context.user_data['text_prompt'] = ["a woman reading a book in a dimly lit, cozy room. She is seated comfortably in an armchair, wearing a warm, dark-colored sweater. A single candle on a nearby table casts a soft, warm glow, illuminating the pages of the book and creating gentle shadows on her face and surroundings. The background includes a few bookshelves filled with books, adding to the intellectual and serene atmosphere. The overall ambiance should be intimate, tranquil, and inviting"]
     elif style == "⚪ Фото ЧБ":
-        context.user_data['text_prompt'] = ["a black and white professional photograph of a woman in a fashion-forward pose. She is dressed in an elegant, high-collared, tailored outfit, standing against a minimalist background with soft, diffused lighting. The composition should highlight the textures and details of her clothing and the contours of her upper body, with a focus on elegance and artistry. The overall aesthetic should be sophisticated, timeless, and refined.."]
+        context.user_data['text_prompt'] = ["A stunning black-and-white portrait of a young woman with delicate facial features, wearing a sleek black turtleneck. Her gaze is confident yet soft, with a subtle, natural expression. The lighting is dramatic, with high contrast and soft shadows emphasizing the contours of her face. Her hair is styled either in a sleek bob, a messy updo, or loose waves, adding character to the composition. The background is minimalistic, either a simple dark or light gradient, ensuring the focus remains on her face and expression. The image exudes elegance, sophistication, and a timeless cinematic aesthetic.",
+        "A high-contrast black-and-white portrait of a woman with sharp, defined features, wearing a stylish black outfit. Her expression is poised and mysterious, with piercing eyes that capture attention. Soft lighting creates dramatic shadows, enhancing the depth and elegance of her face. Her hairstyle is either a sleek, tight bun, a voluminous wavy bob, or loose strands framing her face. The background is minimal, either softly blurred or featuring a striking interplay of light and shadow. The image has a cinematic, editorial feel, evoking sophistication, confidence, and timeless beauty."]
     else:
         await update.message.reply_text("❌ Пожалуйста, выберите стиль используя кнопки.")
         return STYLE_CHOICE
     
+    context.user_data['style'] = style_name
     await update.message.reply_text(
         f'✅ Вы выбрали: *{style_name}*\n\n📸 Теперь, пожалуйста, отправьте вашу фотографию.',
         parse_mode='Markdown'
@@ -88,7 +89,7 @@ async def handle_original_photo(update: Update, context: CallbackContext) -> int
     file = await update.message.photo[-1].get_file()
     context.user_data['original_photo'] = file.file_path
     # For old money style, use prompts one by one
-    if "💰 Old Money" in context.user_data.get('text_prompt', []):
+    if "💰 Old Money" == context.user_data['style'] or "⚪ Фото ЧБ" == context.user_data['style']:
         # Get the next prompt index from user data, defaulting to 0
         prompt_index = context.user_data.get('prompt_index', 0)
         # Get the prompt at current index
@@ -103,7 +104,7 @@ async def handle_original_photo(update: Update, context: CallbackContext) -> int
     url = 'https://api.lightxeditor.com/external/api/v1/avatar'
     headers = {
         'Content-Type': 'application/json',
-        'x-api-key': '60e44d4ce5b94739bd67270b1debbfbc_5cd164633640467abff5524516ba5da6_andoraitools' 
+        'x-api-key': '5824186e2dba4ab4af7156dff9443158_3a82a28931364c439b0bf2e8059dd7ea_andoraitools' 
     }
 
     data = {
@@ -127,7 +128,7 @@ async def handle_original_photo(update: Update, context: CallbackContext) -> int
 
 async def check_status(update: Update, context: CallbackContext) -> None:
     url = 'https://api.lightxeditor.com/external/api/v1/order-status'
-    api_key = '60e44d4ce5b94739bd67270b1debbfbc_5cd164633640467abff5524516ba5da6_andoraitools' 
+    api_key = '5824186e2dba4ab4af7156dff9443158_3a82a28931364c439b0bf2e8059dd7ea_andoraitools' 
 
     order_id = context.user_data.get('order_id')
     if not order_id:
