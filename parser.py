@@ -16,10 +16,10 @@ BOT_COMMANDS = [
 ]
 
 async def start(update: Update, context: CallbackContext) -> int:
-    # Set bot commands
-    await context.bot.set_my_commands(BOT_COMMANDS)
-    
-    keyboard = [[KeyboardButton("👩 Женщина")]]
+    keyboard = [
+        [KeyboardButton("👩 Женщина")],
+        [KeyboardButton("👨 Мужчина")]
+    ]
     reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
     await update.message.reply_text(
         '👋 Привет! Я бот, который поможет вам создать стильную аватарку! \n\n'
@@ -30,8 +30,10 @@ async def start(update: Update, context: CallbackContext) -> int:
 
 async def handle_gender_choice(update: Update, context: CallbackContext) -> int:
     gender = update.message.text
-    if gender != "👩 Женщина":
-        await update.message.reply_text("❌ Пожалуйста, выберите '👩 Женщина' используя кнопку.")
+    context.user_data['gender'] = gender  # Store gender for later use
+    
+    if gender not in ["👩 Женщина", "👨 Мужчина"]:
+        await update.message.reply_text("❌ Пожалуйста, выберите пол используя кнопки.")
         return GENDER_CHOICE
     
     # First send the selection confirmation
@@ -40,14 +42,22 @@ async def handle_gender_choice(update: Update, context: CallbackContext) -> int:
         parse_mode='Markdown'
     )
     
-    # Show style choices with emojis
-    keyboard = [
-        [KeyboardButton("💰 Old Money")],
-        [KeyboardButton("🌸 Весна")],
-        [KeyboardButton("🧘‍♀️ Медитация")],
-        [KeyboardButton("📚 Фото с книгами")],
-        [KeyboardButton("⚪ Фото ЧБ")]
-    ]
+    # Show different style choices based on gender
+    if gender == "👩 Женщина":
+        keyboard = [
+            [KeyboardButton("💰 Old Money")],
+            [KeyboardButton("🌸 Весна")],
+            [KeyboardButton("🧘‍♀️ Медитация")],
+            [KeyboardButton("📚 Фото с книгами")],
+            [KeyboardButton("⚪ Фото ЧБ")]
+        ]
+    else:  # Мужчина
+        keyboard = [
+            [KeyboardButton("🌌 Космос 1")],
+            [KeyboardButton("🌌 Космос 2")],
+            [KeyboardButton("🌌 Космос 3")]
+        ]
+    
     reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
     await update.message.reply_text(
         '🎨 Выберите стиль для вашей аватарки:',
@@ -58,25 +68,46 @@ async def handle_gender_choice(update: Update, context: CallbackContext) -> int:
 async def handle_style_choice(update: Update, context: CallbackContext) -> int:
     style = update.message.text
     style_name = style  # Store the exact style text for the response
+    gender = context.user_data.get('gender')
     
-    if style == "💰 Old Money":
-        context.user_data['text_prompt'] = [
-            "a woman standing in an opulent indoor setting with soft, ambient lighting. She is dressed in a white blazer with a deep V-neck, paired with tailored black trousers and classic black heels. Her hair is styled in soft waves, and she wears minimal, elegant jewelry. The background includes luxurious furnishings, such as a velvet armchair, a marble fireplace, and ornate gold-framed mirrors. The overall mood should be one of understated luxury and classic sophistication",
-            "a woman posing in a sophisticated indoor environment with warm, ambient lighting. She is wearing a simple yet elegant white dress with thin straps, cinched at the waist with a delicate belt. Her hair is styled in a chic updo, and she wears pearl earrings and a matching bracelet. The background features elegant decor, such as a grand piano, a crystal chandelier, and plush drapery. The atmosphere should convey timeless elegance and refinement",
-            "a woman standing on a boat with a scenic waterfront view in the background. She is dressed in a classic white shirt with rolled-up sleeves, tucked into high-waisted navy trousers. Her hair is styled in a neat ponytail, and she wears aviator sunglasses. The boat's deck is made of polished wood, and the water is calm, reflecting the clear blue sky. The scene should convey a sense of timeless elegance and sophistication, with a hint of adventure.",
-        ]
-    elif style == "🌸 Весна":
-        context.user_data['text_prompt'] = ["A beautiful young woman with long, flowing wavy hair, wearing a floral wreath made of spring flowers like cherry blossoms and tulips. She is in a blooming spring garden with pink cherry trees and fresh green grass. She wears a light, airy dress in pastel colors. The lighting is soft and natural, creating a fresh, romantic spring atmosphere."]
-    elif style == "🧘‍♀️ Медитация":
-        context.user_data['text_prompt'] = ["image of a serene woman meditating outdoors at sunset. She is sitting cross-legged on a woven mat, wearing a flowing white outfit that drapes gracefully around her. Her hands rest gently on her lap, holding a polished brass bowl. The setting features a tranquil landscape with a calm body of water reflecting the warm hues of the sunset. Rocky terrain and scattered wildflowers add texture to the foreground, while distant mountains and soft, golden clouds complete the background. The soft, diffused lighting of the setting sun bathes the scene in a peaceful, warm glow, enhancing the overall sense of calm and serenity."]
-    elif style == "📚 Фото с книгами":
-        context.user_data['text_prompt'] = ["a woman reading a book in a dimly lit, cozy room. She is seated comfortably in an armchair, wearing a warm, dark-colored sweater. A single candle on a nearby table casts a soft, warm glow, illuminating the pages of the book and creating gentle shadows on her face and surroundings. The background includes a few bookshelves filled with books, adding to the intellectual and serene atmosphere. The overall ambiance should be intimate, tranquil, and inviting"]
-    elif style == "⚪ Фото ЧБ":
-        context.user_data['text_prompt'] = ["A stunning black-and-white portrait of a young woman with delicate facial features, wearing a sleek black turtleneck. Her gaze is confident yet soft, with a subtle, natural expression. The lighting is dramatic, with high contrast and soft shadows emphasizing the contours of her face. Her hair is styled either in a sleek bob, a messy updo, or loose waves, adding character to the composition. The background is minimalistic, either a simple dark or light gradient, ensuring the focus remains on her face and expression. The image exudes elegance, sophistication, and a timeless cinematic aesthetic.",
-        "A high-contrast black-and-white portrait of a woman with sharp, defined features, wearing a stylish black outfit. Her expression is poised and mysterious, with piercing eyes that capture attention. Soft lighting creates dramatic shadows, enhancing the depth and elegance of her face. Her hairstyle is either a sleek, tight bun, a voluminous wavy bob, or loose strands framing her face. The background is minimal, either softly blurred or featuring a striking interplay of light and shadow. The image has a cinematic, editorial feel, evoking sophistication, confidence, and timeless beauty."]
+    # Prompts for women
+    if gender == "👩 Женщина":
+        if style == "💰 Old Money":
+            context.user_data['text_prompt'] = [
+                "a woman standing in an opulent indoor setting with soft, ambient lighting. She is dressed in a white blazer with a deep V-neck, paired with tailored black trousers and classic black heels. Her hair is styled in soft waves, and she wears minimal, elegant jewelry. The background includes luxurious furnishings, such as a velvet armchair, a marble fireplace, and ornate gold-framed mirrors. The overall mood should be one of understated luxury and classic sophistication",
+                "a woman posing in a sophisticated indoor environment with warm, ambient lighting. She is wearing a simple yet elegant white dress with thin straps, cinched at the waist with a delicate belt. Her hair is styled in a chic updo, and she wears pearl earrings and a matching bracelet. The background features elegant decor, such as a grand piano, a crystal chandelier, and plush drapery. The atmosphere should convey timeless elegance and refinement",
+                "a woman standing on a boat with a scenic waterfront view in the background. She is dressed in a classic white shirt with rolled-up sleeves, tucked into high-waisted navy trousers. Her hair is styled in a neat ponytail, and she wears aviator sunglasses. The boat's deck is made of polished wood, and the water is calm, reflecting the clear blue sky. The scene should convey a sense of timeless elegance and sophistication, with a hint of adventure.",
+            ]
+        elif style == "🌸 Весна":
+            context.user_data['text_prompt'] = ["A beautiful young woman with long, flowing wavy hair, wearing a floral wreath made of spring flowers like cherry blossoms and tulips. She is in a blooming spring garden with pink cherry trees and fresh green grass. She wears a light, airy dress in pastel colors. The lighting is soft and natural, creating a fresh, romantic spring atmosphere."]
+        elif style == "🧘‍♀️ Медитация":
+            context.user_data['text_prompt'] = ["image of a serene woman meditating outdoors at sunset. She is sitting cross-legged on a woven mat, wearing a flowing white outfit that drapes gracefully around her. Her hands rest gently on her lap, holding a polished brass bowl. The setting features a tranquil landscape with a calm body of water reflecting the warm hues of the sunset. Rocky terrain and scattered wildflowers add texture to the foreground, while distant mountains and soft, golden clouds complete the background. The soft, diffused lighting of the setting sun bathes the scene in a peaceful, warm glow, enhancing the overall sense of calm and serenity."]
+        elif style == "📚 Фото с книгами":
+            context.user_data['text_prompt'] = ["a woman reading a book in a dimly lit, cozy room. She is seated comfortably in an armchair, wearing a warm, dark-colored sweater. A single candle on a nearby table casts a soft, warm glow, illuminating the pages of the book and creating gentle shadows on her face and surroundings. The background includes a few bookshelves filled with books, adding to the intellectual and serene atmosphere. The overall ambiance should be intimate, tranquil, and inviting"]
+        elif style == "⚪ Фото ЧБ":
+            context.user_data['text_prompt'] = ["A stunning black-and-white portrait of a young woman with delicate facial features, wearing a sleek black turtleneck. Her gaze is confident yet soft, with a subtle, natural expression. The lighting is dramatic, with high contrast and soft shadows emphasizing the contours of her face. Her hair is styled either in a sleek bob, a messy updo, or loose waves, adding character to the composition. The background is minimalistic, either a simple dark or light gradient, ensuring the focus remains on her face and expression. The image exudes elegance, sophistication, and a timeless cinematic aesthetic.",
+            "A high-contrast black-and-white portrait of a woman with sharp, defined features, wearing a stylish black outfit. Her expression is poised and mysterious, with piercing eyes that capture attention. Soft lighting creates dramatic shadows, enhancing the depth and elegance of her face. Her hairstyle is either a sleek, tight bun, a voluminous wavy bob, or loose strands framing her face. The background is minimal, either softly blurred or featuring a striking interplay of light and shadow. The image has a cinematic, editorial feel, evoking sophistication, confidence, and timeless beauty."]
+        else:
+            await update.message.reply_text("❌ Пожалуйста, выберите стиль используя кнопки.")
+            return STYLE_CHOICE
+    
+    # Prompts for men
     else:
-        await update.message.reply_text("❌ Пожалуйста, выберите стиль используя кнопки.")
-        return STYLE_CHOICE
+        if style == "🌌 Космос 1":
+            context.user_data['text_prompt'] = [
+                "A male astronaut inside a high-tech space shuttle, his face clearly visible through the clean glass visor of his advanced helmet. The astronaut appears focused as he prepares for a spacewalk. The interior is illuminated by a soft blue glow from futuristic control panels, with holographic screens and buttons surrounding him. The helmet is perfectly transparent, with no reflections or distortions, allowing a clear view of his determined expression."
+            ]
+        elif style == "🌌 Космос 2":
+            context.user_data['text_prompt'] = [
+                "A male astronaut exploring the surface of an alien planet, his face seen through the perfectly clear glass dome of his helmet. His suit is advanced, featuring reinforced joints and an oxygen system. The landscape consists of a vast rocky terrain with a purple-hued sky, distant mountains, and glowing alien flora. The helmet’s glass is free of reflections or particles, providing an unobstructed view of his focused expression as he observes the extraterrestrial environment."
+            ]
+        elif style == "🌌 Космос 3":
+            context.user_data['text_prompt'] = [
+                "A male astronaut floating outside a massive space station, gripping a robotic arm for stability. His face is clearly visible through the pristine visor of his helmet, showing deep concentration as he carefully maneuvers. His suit has a sleek, futuristic design with built-in thrusters and mission patches. The background showcases the enormous space station structure with the deep blackness of space beyond, dotted with distant stars. The helmet glass is perfectly transparent, ensuring no distortions or reflections obscure his expression."
+            ]
+        else:
+            await update.message.reply_text("❌ Пожалуйста, выберите стиль используя кнопки.")
+            return STYLE_CHOICE
     
     context.user_data['style'] = style_name
     await update.message.reply_text(
@@ -104,7 +135,7 @@ async def handle_original_photo(update: Update, context: CallbackContext) -> int
     url = 'https://api.lightxeditor.com/external/api/v1/avatar'
     headers = {
         'Content-Type': 'application/json',
-        'x-api-key': '5824186e2dba4ab4af7156dff9443158_3a82a28931364c439b0bf2e8059dd7ea_andoraitools' 
+        'x-api-key': 'e3ab90df55224a8ebe186150600f54c6_310f9431e0f34106a9b5324c94df4ee0_andoraitools' 
     }
 
     data = {
@@ -113,22 +144,40 @@ async def handle_original_photo(update: Update, context: CallbackContext) -> int
         "textPrompt": text_prompt,
     }
 
-    response = requests.post(url, headers=headers, json=data)
-
-    if response.status_code == 200:
-        order_id = response.json().get("body", {}).get("orderId")
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()  # Raises an HTTPError for bad responses (4xx, 5xx)
+        
+        response_data = response.json()
+        if not response_data:
+            raise ValueError("Empty response received")
+            
+        order_id = response_data.get("body", {}).get("orderId")
+        if not order_id:
+            raise ValueError("No order ID in response")
+            
         context.user_data['order_id'] = order_id
         await update.message.reply_text("✨ Запрос успешно отправлен! По готовности я пришлю вам вашу аватарку!")
         await check_status(update, context)
-    else:
-        await update.message.reply_text(f"❌ Запрос не удался. Код ошибки: {response.status_code}")
-        await update.message.reply_text(response.text)
+        
+    except requests.exceptions.RequestException as e:
+        await update.message.reply_text(f"❌ Ошибка сети при отправке запроса: {str(e)}")
+    except ValueError as e:
+        await update.message.reply_text(f"❌ Ошибка в ответе сервера: {str(e)}")
+    except Exception as e:
+        if response and response.text:
+            if "5040, API_CREDITS_CONSUMED" in response.text:
+                await update.message.reply_text("❌ Достигнут лимит запросов на сегодня. Пожалуйста, попробуйте завтра.")
+            else:
+                await update.message.reply_text(f"❌ Неожиданная ошибка: {str(e)}. Ответ сервера: {response.text}")
+        else:
+            await update.message.reply_text(f"❌ Неожиданная ошибка: {str(e)}")
 
     return ConversationHandler.END
 
 async def check_status(update: Update, context: CallbackContext) -> None:
     url = 'https://api.lightxeditor.com/external/api/v1/order-status'
-    api_key = '5824186e2dba4ab4af7156dff9443158_3a82a28931364c439b0bf2e8059dd7ea_andoraitools' 
+    api_key = 'e3ab90df55224a8ebe186150600f54c6_310f9431e0f34106a9b5324c94df4ee0_andoraitools' 
 
     order_id = context.user_data.get('order_id')
     if not order_id:
