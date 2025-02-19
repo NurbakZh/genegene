@@ -7,8 +7,8 @@ import time
 GENDER_CHOICE, STYLE_CHOICE, ORIGINAL_PHOTO = range(3)
 girl1 = "https://www.dropbox.com/scl/fi/px3txxw79jgrsqevvqy95/girl1.jpg?rlkey=fr1yfszqyzksfftsggdeoq7vg&st=5wiybsxh&dl=1"
 girl2 = "https://www.dropbox.com/scl/fi/7ewwbqo3benikm928fgaq/girl2.jpg?rlkey=jo8wxpj8ihk33l9xarlyf8bbw&st=1gum620l&dl=1"
-man1 = "https://www.dropbox.com/scl/fi/tp837x30sl6k6fk03ewkh/man1.jpg?rlkey=2991qei1bkf64czkwi86nvfxo&st=h4gfq94y&dl=1"
-man2 = "https://www.dropbox.com/scl/fi/mxac1nv9q020ue80kipz0/man2.jpg?rlkey=c7z2vf5orircy2m8phceg60d0&st=g8ks9aar&dl=1"
+man1 = "https://www.dropbox.com/scl/fi/g9h1uctxdos3hm2rxzqpx/photo_2025-02-19_21-08-53.jpg?rlkey=yvmy84enskvfpsqc1ig4he3bw&st=mdoprd0n&dl=1"
+man2 = "https://www.dropbox.com/scl/fi/uq0iir5r4ebmg6242c5gs/photo_2025-02-19_21-08-54.jpg?rlkey=9md5erazckn0f2hxsqyyl24ah&st=3d4ad2di&dl=2"
 
 # Add bot commands description
 BOT_COMMANDS = [
@@ -53,9 +53,10 @@ async def handle_gender_choice(update: Update, context: CallbackContext) -> int:
         ]
     else:  # Мужчина
         keyboard = [
+            [KeyboardButton("🏔️ Горы 1")],
+            [KeyboardButton("🏔️ Горы 2")],
             [KeyboardButton("🌌 Космос 1")],
-            [KeyboardButton("🌌 Космос 2")],
-            [KeyboardButton("🌌 Космос 3")]
+            [KeyboardButton("🌌 Космос 2")]
         ]
     
     reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
@@ -93,15 +94,19 @@ async def handle_style_choice(update: Update, context: CallbackContext) -> int:
     
     # Prompts for men
     else:
-        if style == "🌌 Космос 1":
+        if style == "🏔️ Горы 1":
             context.user_data['text_prompt'] = [
-                "A male astronaut inside a high-tech space shuttle, his face clearly visible through the clean glass visor of his advanced helmet. The astronaut appears focused as he prepares for a spacewalk. The interior is illuminated by a soft blue glow from futuristic control panels, with holographic screens and buttons surrounding him. The helmet is perfectly transparent, with no reflections or distortions, allowing a clear view of his determined expression."
+                "A confident male mountaineer standing on a dramatic mountain peak at sunrise. He's wearing professional alpine climbing gear - a weatherproof jacket, climbing harness, and helmet. His face shows determination and achievement. The background features snow-capped peaks bathed in golden morning light, with dramatic clouds below. The composition captures both the majesty of the mountains and the triumph of the climber, with perfect visibility of his facial features. The lighting is crisp and clear, emphasizing the alpine environment."
+            ]
+        elif style == "🏔️ Горы 2":
+            context.user_data['text_prompt'] = [
+                "A male climber scaling a challenging rock face, captured from a side angle that clearly shows his face. He's wearing technical climbing gear - a fitted climbing shirt, chalk bag, and safety equipment. The background shows a vast mountain landscape with dramatic cliffs and a deep valley below. The lighting is natural and clear, highlighting both the intensity of the climb and the climber's focused expression. The scene conveys strength, skill, and adventure in a pristine mountain setting."
+            ]
+        elif style == "🌌 Космос 1":
+            context.user_data['text_prompt'] = [
+                "A male astronaut exploring the surface of an alien planet, his face seen through the perfectly clear glass dome of his helmet. His suit is advanced, featuring reinforced joints and an oxygen system. The landscape consists of a vast rocky terrain with a purple-hued sky, distant mountains, and glowing alien flora. The helmet's glass is free of reflections or particles, providing an unobstructed view of his focused expression as he observes the extraterrestrial environment."
             ]
         elif style == "🌌 Космос 2":
-            context.user_data['text_prompt'] = [
-                "A male astronaut exploring the surface of an alien planet, his face seen through the perfectly clear glass dome of his helmet. His suit is advanced, featuring reinforced joints and an oxygen system. The landscape consists of a vast rocky terrain with a purple-hued sky, distant mountains, and glowing alien flora. The helmet’s glass is free of reflections or particles, providing an unobstructed view of his focused expression as he observes the extraterrestrial environment."
-            ]
-        elif style == "🌌 Космос 3":
             context.user_data['text_prompt'] = [
                 "A male astronaut floating outside a massive space station, gripping a robotic arm for stability. His face is clearly visible through the pristine visor of his helmet, showing deep concentration as he carefully maneuvers. His suit has a sleek, futuristic design with built-in thrusters and mission patches. The background showcases the enormous space station structure with the deep blackness of space beyond, dotted with distant stars. The helmet glass is perfectly transparent, ensuring no distortions or reflections obscure his expression."
             ]
@@ -135,12 +140,16 @@ async def handle_original_photo(update: Update, context: CallbackContext) -> int
     url = 'https://api.lightxeditor.com/external/api/v1/avatar'
     headers = {
         'Content-Type': 'application/json',
-        'x-api-key': 'e3ab90df55224a8ebe186150600f54c6_310f9431e0f34106a9b5324c94df4ee0_andoraitools' 
+        'x-api-key': '0e677c1bd493442092d5b52ba285c889_7bab040d1230444aa90052848f59c7c6_andoraitools' 
     }
+
+    style_image_url = ""
+    if "🌌 Космос 2" == context.user_data['style']:
+        style_image_url = man2
 
     data = {
         "imageUrl": context.user_data['original_photo'],
-        "styleImageUrl": "",
+        "styleImageUrl": style_image_url,
         "textPrompt": text_prompt,
     }
 
@@ -177,7 +186,7 @@ async def handle_original_photo(update: Update, context: CallbackContext) -> int
 
 async def check_status(update: Update, context: CallbackContext) -> None:
     url = 'https://api.lightxeditor.com/external/api/v1/order-status'
-    api_key = 'e3ab90df55224a8ebe186150600f54c6_310f9431e0f34106a9b5324c94df4ee0_andoraitools' 
+    api_key = '0e677c1bd493442092d5b52ba285c889_7bab040d1230444aa90052848f59c7c6_andoraitools' 
 
     order_id = context.user_data.get('order_id')
     if not order_id:
